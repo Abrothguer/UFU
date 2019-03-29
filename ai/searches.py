@@ -1,8 +1,51 @@
 #!/usr/bin/env python3
 
 import heapq
+import math
 
 MAX_DEPTH = 10
+
+class HeuristicAStar():
+
+    def __init__(self):
+
+        self.cities = {}
+        self.heuristics = {}
+
+    def add_city_coords(self, name, latitude, longitude):
+
+        self.cities[name] = (float(latitude), float(longitude))
+
+    def calculate_for(self, destination):
+
+        for city in self.cities:
+            self.heuristics[city] = self.__calculate(city, destination)
+
+    def __calculate(self, origin, destination):
+
+        lat_o, lon_o = self.cities[origin]
+        lat_d, lon_d = self.cities[destination]
+        radius = 6371
+
+        diff_lat = math.radians(lat_o-lat_d)
+        diff_lon = math.radians(lon_o-lon_d)
+
+        a = math.sin(diff_lat/2)**2 + math.cos(math.radians(lat_o)) * math.cos(math.radians(lat_d)) * math.sin(diff_lon/2)**2
+        distance = radius * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+
+        return distance
+
+    def erase_heuristics(self):
+        del self.heuristics
+        self.heuristics = {}
+
+    def print_heuristic(self):
+        for city in self.heuristics:
+            print(f"{city} -> {self.heuristics[city]}")
+
+    def get_heursitic(self, city):
+        return self.heuristics[city]
+
 
 class CountryMap():
 
@@ -11,6 +54,7 @@ class CountryMap():
         self.cities = 0
         self.__city_relation = {}
         self.__graph = []
+        self.__heuristic = HeuristicAStar()
 
         #Debug
         self.__reverse_relation = []
@@ -18,11 +62,17 @@ class CountryMap():
     def print_dict(self):
         print(self.__graph)
 
-    def add_city(self, name):
+    def add_city(self, city):
+
+        name, lat, long = city
         if self.__city_relation.get(name) is None:
+
             self.__city_relation[name] = self.cities
             self.__reverse_relation.append(name)
             self.__graph.append([])
+
+            self.__heuristic.add_city_coords(name, lat, long)
+
             self.cities += 1
         # print(self.__city_relation)
 
@@ -136,6 +186,38 @@ class CountryMap():
 
         return result
 
+    def a_star_search(self, origin, target):
+
+        # print("Hello\n")
+
+        self.__heuristic.calculate_for(target)
+        # self.__heuristic.print_heuristic()
+
+        # Priority queue: Heuristic, Real cost, Path
+        priority_q = [(self.__heuristic.get_heursitic(origin), 0, [self.__city_relation[origin]])]
+        result = None
+        target = self.__city_relation[target]
+
+        while True:
+            heur_cost, total_cost, path = heapq.heappop(priority_q)
+            current = path[-1]
+
+            if current == target:
+                result = path, total_cost
+                break
+
+            for node, cost in self.__graph[current]:
+
+                new_path = list(path)
+                new_path.append(node)
+                heapq.heappush(priority_q, (self.__heuristic.get_heursitic(
+                    self.__reverse_relation[node]), cost+total_cost, new_path))
+
+        # print("Goodbye!\n")
+
+        self.__heuristic.erase_heuristics()
+        return result
+
 
 def main():
     country = read_file()
@@ -147,9 +229,10 @@ def main():
                           [1].Profundidade\n
                           [2].Custo Uniforme\n
                           [3].Busca Iterativa\n
-                          [4].Sair\n\n""")
+                          [4].A-estrela\n
+                          [5].Sair\n\n""")
         choice = int(choice)
-        if choice not in [0, 1, 2, 3]:
+        if choice not in [0, 1, 2, 3, 4]:
             break
 
         city_1 = input("Cidade de origem: ")
@@ -164,8 +247,10 @@ def main():
             result = country.depth_search(city_1, city_2)
         elif choice == 2:
             result = country.uniform_search(city_1, city_2)
-        else:
+        elif choice == 3:
             result = country.iterative_search(city_1, city_2, depth)
+        else:
+            result = country.a_star_search(city_1, city_2)
 
         if result is None:
             print("\nSem caminho!\n\n")
@@ -188,6 +273,8 @@ def read_file():
             line = file.readline().strip()
             if line == '':
                 break
+            line = line.split(";")
+            print(line)
             country.add_city(line)
 
         while True:

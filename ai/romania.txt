@@ -1,25 +1,25 @@
 romania
 
-Giurgiu
-Urziceni
-Hirsova
-Eforie
-Neamt
-Oradea
-Zerind
-Arad
-Timisoara
-Lugoj
-Mehadia
-Drobeta
-Craiova
-Sibiu
-Fagaras
-Pitesti
-Vaslui
-Iasi
-Rimnicu Vilcea
-Bucharest
+Giurgiu;43.8977007;25.9274979
+Urziceni;44.7206168;26.6284666
+Hirsova;44.6879529;27.9453138
+Eforie;44.0491285;28.6439722
+Neamt;46.9893747;26.1743946
+Oradea;47.0746904;21.8674047
+Zerind;46.624256;21.5091705
+Arad;46.1752551;21.2713386
+Timisoara;45.741163;21.1465502
+Lugoj;45.6871888;21.8776412
+Mehadia;44.858311;22.4312139
+Drobeta;44.6376223;22.6360416
+Craiova;44.3232634;23.7366252
+Sibiu;45.7830954;24.0697986
+Fagaras;45.8249132;24.9389536
+Pitesti;44.8560255;24.8384835
+Vaslui;46.6424419;27.6935288
+Iasi;47.1562327;27.5169309
+Rimnicu Vilcea;45.1028554;24.3167778
+Bucharest;44.4379269;26.0245979
 
 Oradea;Zerind;71
 Oradea;Sibiu;151
