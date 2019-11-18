@@ -9,6 +9,10 @@ Retorna para cada token do arquivo informado:
 Autor: Arthur Borges - 11711BCC014
 """
 
+# TODO: PEGAR ULTIMO LEXEMA
+# TODO: DOCSTRINGS
+# TODO: 1-3 PROGRAMAS EXEMPLO
+
 # Estados finais do autômato
 FINALS = {
     "E": {"name": "relop", "value": "LE", "pos": None},
@@ -38,15 +42,157 @@ FINALS = {
     "BF": {"name": "inicio", "value": None, "pos": None},
     "BO": {"name": "enquanto", "value": None, "pos": None},
     "BX": {"name": "programa", "value": None, "pos": None},
-    "BW": {"name": "=", "value": None, "pos": None},
+    "BY": {"name": "=", "value": None, "pos": None},
 }
 
+# Lista de separadores
 SEPARATORS = ["\t", "\n", " "]
+
+
+def word_middle_aux(char, wtdchar, wtdstate):
+    """a."""
+    state = None
+    stepback = False
+    if char in SEPARATORS:
+        state = "L"
+        stepback = True
+    if char == wtdchar:
+        state = wtdstate
+    elif char.isalpha() or char.isdigit():
+        state = "K"
+    return state, stepback
+
+
+def word_final_aux(char, wtdstate):
+    """a."""
+    state = None
+    stepback = False
+    if char in SEPARATORS:
+        state = wtdstate
+        stepback = True
+    elif char.isalpha() or char.isdigit():
+        state = "K"
+    return state, stepback
 
 
 def word_auto(state, char):
     """a."""
-    return "we must destroy him, for he is a creature of darkness."
+    print(f"Word auto called: \t{state}, \t'{char}'")
+    next_state = None
+    stepback = False
+
+    if state == "A":
+        if char == "s":
+            next_state = "AC"
+        elif char == "e":
+            next_state = "BG"
+        elif char == "f":
+            next_state = "AF"
+        elif char == "i":
+            next_state = "AJ"
+        elif char == "c":
+            next_state = "AN"
+        elif char == "r":
+            next_state = "AS"
+        elif char == "p":
+            next_state = "BP"
+        elif char.isalpha():
+            next_state = "K"
+
+    elif state == "AC":
+        next_state, stepback = word_middle_aux(char, "e", "AD")
+    elif state == "AD":
+        next_state, stepback = word_final_aux(char, "AE")
+
+    elif state == "AF":
+        next_state, stepback = word_middle_aux(char, "i", "AG")
+    elif state == "AG":
+        next_state, stepback = word_middle_aux(char, "m", "AH")
+    elif state == "AH":
+        next_state, stepback = word_final_aux(char, "AI")
+
+    elif state == "AJ":
+        next_state, stepback = word_middle_aux(char, "n", "AK")
+    elif state == "AK":
+        next_state, stepback = word_middle_aux(char, "t", "AL")
+        if char == "i":
+            next_state = "BB"
+    elif state == "AL":
+        next_state, stepback = word_final_aux(char, "AM")
+
+    elif state == "AN":
+        next_state, stepback = word_middle_aux(char, "h", "AO")
+    elif state == "AO":
+        next_state, stepback = word_middle_aux(char, "a", "AP")
+    elif state == "AP":
+        next_state, stepback = word_middle_aux(char, "r", "AQ")
+    elif state == "AQ":
+        next_state, stepback = word_final_aux(char, "AR")
+
+    elif state == "AS":
+        next_state, stepback = word_middle_aux(char, "e", "AT")
+    elif state == "AT":
+        next_state, stepback = word_middle_aux(char, "a", "AU")
+    elif state == "AU":
+        next_state, stepback = word_middle_aux(char, "l", "AV")
+    elif state == "AV":
+        next_state, stepback = word_final_aux(char, "AX")
+
+    elif state == "BB":
+        next_state, stepback = word_middle_aux(char, "c", "BC")
+    elif state == "BC":
+        next_state, stepback = word_middle_aux(char, "i", "BD")
+    elif state == "BD":
+        next_state, stepback = word_middle_aux(char, "o", "BE")
+    elif state == "BE":
+        next_state, stepback = word_final_aux(char, "BF")
+
+    elif state == "BG":
+        next_state, stepback = word_middle_aux(char, "n", "BH")
+    elif state == "BH":
+        next_state, stepback = word_middle_aux(char, "q", "BI")
+    elif state == "BI":
+        next_state, stepback = word_middle_aux(char, "u", "BJ")
+    elif state == "BJ":
+        next_state, stepback = word_middle_aux(char, "a", "BK")
+    elif state == "BK":
+        next_state, stepback = word_middle_aux(char, "n", "BL")
+    elif state == "BL":
+        next_state, stepback = word_middle_aux(char, "t", "BM")
+    elif state == "BM":
+        next_state, stepback = word_middle_aux(char, "o", "BN")
+    elif state == "BN":
+        next_state, stepback = word_final_aux(char, "BO")
+
+    elif state == "BP":
+        next_state, stepback = word_middle_aux(char, "r", "BQ")
+    elif state == "BQ":
+        next_state, stepback = word_middle_aux(char, "o", "BR")
+    elif state == "BR":
+        next_state, stepback = word_middle_aux(char, "g", "BS")
+    elif state == "BS":
+        next_state, stepback = word_middle_aux(char, "r", "BT")
+    elif state == "BT":
+        next_state, stepback = word_middle_aux(char, "a", "BU")
+    elif state == "BU":
+        next_state, stepback = word_middle_aux(char, "m", "BV")
+    elif state == "BV":
+        next_state, stepback = word_middle_aux(char, "a", "BW")
+    elif state == "BW":
+        next_state, stepback = word_final_aux(char, "BX")
+
+    elif state == "K":
+        if char.isalpha() or char.isdigit():
+            next_state = "K"
+        elif char in SEPARATORS:
+            next_state = "L"
+            stepback = True
+
+    if next_state is None:
+        raise Exception(f"WORD: Caractér estranho para estado: '{char}', {state}.")
+
+    print(f"Word auto return: {(next_state, next_state in FINALS.keys(), stepback)}")
+    return (next_state, next_state in FINALS.keys(), stepback)
 
 
 def relop_auto(state, char):
@@ -80,7 +226,7 @@ def relop_auto(state, char):
         if char == "=":
             next_state = "J"
         elif char.isalnum() or char in SEPARATORS:
-            next_state = "BW"
+            next_state = "BY"
             stepback = True
 
     if next_state is None:
@@ -222,7 +368,8 @@ def analyse_line(line, num):
 
         # Letra -> automato de reconhecimento de palavras reservadas e identificadores
         elif line[index].isalpha():
-            pass
+            current, finalized, stepback = word_auto(current, line[index])
+            working_subauto = word_auto
 
         # Número -> automato de reconhecimento de numerais
         elif line[index].isdigit():
@@ -335,12 +482,24 @@ def test_number():
             print(token)
 
 
+def test_words():
+    """a."""
+    strs = ["id idteste programa enquanto int inicio fim real char se arthur programs "]
+
+    for line in strs:
+        tokens = analyse_line(line, 1)
+        print(f"Tokens found in line '{line}':\n")
+        for token in tokens:
+            print(token)
+
+
 def test():
     """a."""
     # test_relop()
     # test_arit()
     # test_symbol()
-    test_number()
+    # test_number()
+    test_words()
 
 
 if __name__ == "__main__":
