@@ -9,8 +9,9 @@ Retorna para cada token do arquivo informado:
 Autor: Arthur Borges - 11711BCC014
 """
 
+SYMBOL_TABLE = []
+
 # TODO: DOCSTRINGS
-# TODO: RETORNAR VALOR DE ID E NUMERAL
 
 # Estados finais do autômato
 FINALS = {
@@ -48,6 +49,12 @@ FINALS = {
 SEPARATORS = ["\t", "\n", " "]
 
 
+def add_to_symboltable(lexeme):
+    if lexeme not in SYMBOL_TABLE:
+        SYMBOL_TABLE.append(lexeme)
+    return SYMBOL_TABLE.index(lexeme)
+
+
 def word_middle_aux(char, wtdchar, wtdstate):
     """a."""
     state = None
@@ -79,6 +86,7 @@ def word_auto(state, char):
     print(f"Word auto called: \t{state}, \t'{char}'")
     next_state = None
     stepback = False
+    symbol_table = False
 
     if state == "A":
         if char == "s":
@@ -186,12 +194,13 @@ def word_auto(state, char):
         elif char in SEPARATORS or char in ["+", "-", "/", "*", "<", ">", "=", ";", ")", "'"]:
             next_state = "L"
             stepback = True
+            symbol_table = True
 
     if next_state is None:
         raise Exception(f"WORD: Caractér estranho para estado: '{char}', {state}.")
 
     print(f"Word auto return: {(next_state, next_state in FINALS.keys(), stepback)}")
-    return (next_state, next_state in FINALS.keys(), stepback)
+    return (next_state, next_state in FINALS.keys(), stepback, symbol_table)
 
 
 def relop_auto(state, char):
@@ -336,7 +345,7 @@ def number_auto(state, char):
         raise Exception(f"NUMBER: Caractér estranho para estado: '{char}', {state}.")
 
     print(f"Number auto return: {(next_state, next_state in FINALS.keys(), stepback)}")
-    return (next_state, next_state in FINALS.keys(), stepback)
+    return (next_state, next_state in FINALS.keys(), stepback, True)
 
 
 def analyse_line(line, num):
@@ -361,21 +370,22 @@ def analyse_line(line, num):
 
         finalized = None
         stepback = False
+        value = []
 
         try:
             # Existe um subautomato trabalhando, dê o caractér para o tal.
             if working_subauto is not None:
                 print("Calling working subautomata...")
-                current, finalized, stepback = working_subauto(current, line[index])
+                current, finalized, stepback, *value = working_subauto(current, line[index])
 
             # Letra -> automato de reconhecimento de palavras reservadas e identificadores
             elif line[index].isalpha():
-                current, finalized, stepback = word_auto(current, line[index])
+                current, finalized, stepback, *value = word_auto(current, line[index])
                 working_subauto = word_auto
 
             # Número -> automato de reconhecimento de numerais
             elif line[index].isdigit():
-                current, finalized, stepback = number_auto(current, line[index])
+                current, finalized, stepback, *value = number_auto(current, line[index])
                 working_subauto = number_auto
 
             # Relop -> automato de reconhecimento relop
@@ -414,6 +424,10 @@ def analyse_line(line, num):
 
             token = FINALS[current].copy()
             token["pos"] = (num, startpos + 1)
+
+            # print(f"Value of token {lexeme} is {value}")
+            if value != [] and value[0]:
+                token["value"] = add_to_symboltable(lexeme)
             tokens.append(token)
 
             lexeme = ""
@@ -428,7 +442,6 @@ def analyse_line(line, num):
         index += 1
 
     if lexeme != "":  # Gambiarra - Separador não processado no final da linha
-        print(f"LEXEME IS '{lexeme[0]}','{lexeme}'")
         if lexeme.replace("\t", "").replace("\n", "").replace(" ", "") == "":
             tokens.append({"name": "separador", "value": None, "pos": (num, startpos + 1)})
         else:
@@ -521,10 +534,12 @@ def test():
     # test_arit()
     # test_symbol()
     # test_number()
-    test_words()
+    # test_words()
 
-    # main("ptest0.txt")
-    main("ptest1.txt")
+    main("ptest0.txt")
+
+    print(SYMBOL_TABLE)
+    # main("ptest1.txt")
 
 
 if __name__ == "__main__":
