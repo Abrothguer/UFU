@@ -9,9 +9,8 @@ Retorna para cada token do arquivo informado:
 Autor: Arthur Borges - 11711BCC014
 """
 
-# TODO: PEGAR ULTIMO LEXEMA
 # TODO: DOCSTRINGS
-# TODO: 1-3 PROGRAMAS EXEMPLO
+# TODO: RETORNAR VALOR DE ID E NUMERAL
 
 # Estados finais do autômato
 FINALS = {
@@ -184,7 +183,7 @@ def word_auto(state, char):
     elif state == "K":
         if char.isalpha() or char.isdigit():
             next_state = "K"
-        elif char in SEPARATORS:
+        elif char in SEPARATORS or char in ["+", "-", "/", "*", "<", ">", "=", ";", ")", "'"]:
             next_state = "L"
             stepback = True
 
@@ -346,6 +345,8 @@ def analyse_line(line, num):
 
     Retorna uma lista com todos os tokens encontrados
     """
+    if line[-1] != "\n":
+        line += "\n"  # Gambiarra pra testes e última linha do arquivo
     size = len(line)
     index = 0
     current = "A"
@@ -361,48 +362,54 @@ def analyse_line(line, num):
         finalized = None
         stepback = False
 
-        # Existe um subautomato trabalhando, dê o caractér para o tal.
-        if working_subauto is not None:
-            print("Calling working subautomata...")
-            current, finalized, stepback = working_subauto(current, line[index])
+        try:
+            # Existe um subautomato trabalhando, dê o caractér para o tal.
+            if working_subauto is not None:
+                print("Calling working subautomata...")
+                current, finalized, stepback = working_subauto(current, line[index])
 
-        # Letra -> automato de reconhecimento de palavras reservadas e identificadores
-        elif line[index].isalpha():
-            current, finalized, stepback = word_auto(current, line[index])
-            working_subauto = word_auto
+            # Letra -> automato de reconhecimento de palavras reservadas e identificadores
+            elif line[index].isalpha():
+                current, finalized, stepback = word_auto(current, line[index])
+                working_subauto = word_auto
 
-        # Número -> automato de reconhecimento de numerais
-        elif line[index].isdigit():
-            current, finalized, stepback = number_auto(current, line[index])
-            working_subauto = number_auto
+            # Número -> automato de reconhecimento de numerais
+            elif line[index].isdigit():
+                current, finalized, stepback = number_auto(current, line[index])
+                working_subauto = number_auto
 
-        # Relop -> automato de reconhecimento relop
-        elif line[index] in ["<", ">", "="]:
-            current, finalized, stepback = relop_auto(current, line[index])
-            working_subauto = relop_auto
+            # Relop -> automato de reconhecimento relop
+            elif line[index] in ["<", ">", "="]:
+                current, finalized, stepback = relop_auto(current, line[index])
+                working_subauto = relop_auto
 
-        # Operador -> automato de reconhecimento aritmetico
-        elif line[index] in ["+", "-", "/", "*"]:
-            current, finalized, stepback = arit_auto(current, line[index])
-            working_subauto = arit_auto
+            # Operador -> automato de reconhecimento aritmetico
+            elif line[index] in ["+", "-", "/", "*"]:
+                current, finalized, stepback = arit_auto(current, line[index])
+                working_subauto = arit_auto
 
-        # Símbolos -> automato de reconhecimento de simbolos
-        elif line[index] in ["'", ";", "(", ")"]:
-            current, finalized, stepback = symbol_auto(current, line[index])
-            working_subauto = symbol_auto
+            # Símbolos -> automato de reconhecimento de simbolos
+            elif line[index] in ["'", ";", "(", ")"]:
+                current, finalized, stepback = symbol_auto(current, line[index])
+                working_subauto = symbol_auto
 
-        # Separadores
-        elif line[index] in SEPARATORS:
-            current, finalized, stepback = separator_auto(current, line[index])
-            working_subauto = separator_auto
+            # Separadores
+            elif line[index] in SEPARATORS:
+                current, finalized, stepback = separator_auto(current, line[index])
+                working_subauto = separator_auto
 
-        # Caracter estranho
-        else:
+            # Caracter estranho
+            else:
+                raise Exception(
+                    f"Cacatér '{line[index]}' não reconhecido linha: {num}, coluna: {index}."
+                )
+        except Exception as ecp:
             raise Exception(
-                f"Cacatér '{line[index]}' não reconhecido linha: {num}, coluna: {index}."
-            )
+                f"Erro: Lexema: {lexeme}, Linha: {num}, Coluna: {index}, Detalhes: {ecp}"
+            ) from ecp
 
         if finalized:
+            print(f"Done processing the token -> lexeme: {lexeme}, stepback: {stepback}")
             working_subauto = None
 
             token = FINALS[current].copy()
@@ -416,9 +423,18 @@ def analyse_line(line, num):
         if stepback:
             index -= 1
             startpos -= 1
-        else:
+        elif not finalized:
             lexeme += line[index]
         index += 1
+
+    if lexeme != "":  # Gambiarra - Separador não processado no final da linha
+        print(f"LEXEME IS '{lexeme[0]}','{lexeme}'")
+        if lexeme.replace("\t", "").replace("\n", "").replace(" ", "") == "":
+            tokens.append({"name": "separador", "value": None, "pos": (num, startpos + 1)})
+        else:
+            raise Exception(
+                f"Cacatér '{line[index-1]}' não reconhecido linha: {num}, coluna: {startpos}."
+            )
 
     return tokens
 
@@ -431,11 +447,17 @@ def main(filename):
     """
     with open(filename, "r") as code:
 
-        print("Início da análise léxica")
-        for num, line in code:
-            analyse_line("line", num + 1)
+        tokens = []
+        print("\nInício da análise léxica")
+
+        for num, line in enumerate(code):
+            tokens.append(analyse_line(line, num + 1))
         else:
-            print("Fim da análise...")
+            print("Fim da análise...\n  ")
+
+        print("Tokens encontrados pelo analisador lexico")
+        for token in [token for sublist in tokens for token in sublist]:
+            print(token)
 
 
 def test_relop():
@@ -484,7 +506,7 @@ def test_number():
 
 def test_words():
     """a."""
-    strs = ["id idteste programa enquanto int inicio fim real char se arthur programs "]
+    strs = ["id idteste programa enquanto int inicio fim real char se arthur programs"]
 
     for line in strs:
         tokens = analyse_line(line, 1)
@@ -500,6 +522,9 @@ def test():
     # test_symbol()
     # test_number()
     test_words()
+
+    # main("ptest0.txt")
+    main("ptest1.txt")
 
 
 if __name__ == "__main__":

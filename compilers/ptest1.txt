@@ -1,0 +1,11 @@
+programa
+inicio
+
+    int ano = 2019
+
+    se (ano >< 2020)
+    inicio
+        ano = 2019
+    fim
+
+fim

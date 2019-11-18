@@ -1,0 +1,28 @@
+
+
+
+programa
+inicio
+
+    int intson = 1999;
+    char charson;
+    real realson;
+
+    se (intson >= 2000)
+    inicio
+        charson = 'B'
+        realson = 14.88
+    fim
+
+    se (intson < 2000)
+    inicio
+        charson = 'A'
+        realson = 2.32
+
+    realson = realson * intson * 1000
+    enquanto (realson >= 0)
+    inicio
+        realson = realson - intson
+    fim
+
+fim
