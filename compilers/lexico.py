@@ -246,7 +246,7 @@ def relop_auto(state, char):
 
 
 def separator_auto(state, char):
-    """a."""
+    """A separator automaton."""
     print(f"Separator auto called: \t\t{state}, \t'{char}'")
     if state == "A" and char in SEPARATORS:
         return ("X", False, False)
@@ -469,8 +469,11 @@ def main(filename):
             print("Fim da análise...\n  ")
 
         print("Tokens encontrados pelo analisador lexico")
-        for token in [token for sublist in tokens for token in sublist]:
+        tokens = [token for sublist in tokens for token in sublist]
+        for token in tokens:
             print(token)
+
+    return tokens
 
 
 def test_relop():
@@ -540,6 +543,12 @@ def test():
 
     print(SYMBOL_TABLE)
     # main("ptest1.txt")
+
+
+def analyze_code(filename):
+
+    for token in main(filename):
+        yield token
 
 
 if __name__ == "__main__":
