@@ -1,0 +1,20 @@
+programa
+inicio
+
+    int x;
+    int y;
+    int z;
+
+    x = 10;
+    y = 15;
+    z = 90;
+
+    se ( x*x >= y*z-100 )
+    inicio
+        enquanto ( z > 0 )
+        inicio
+            z = z - y - x;
+        fim
+    fim
+
+fim
